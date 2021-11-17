@@ -103,6 +103,7 @@ type Client struct {
 	UsageCharge                UsageChargeService
 	Metafield                  MetafieldService
 	Blog                       BlogService
+	Article                    ArticleService
 	ApplicationCharge          ApplicationChargeService
 	Redirect                   RedirectService
 	Page                       PageService
@@ -276,6 +277,7 @@ func NewClient(app App, shopName, token string, opts ...Option) *Client {
 	c.RecurringApplicationCharge = &RecurringApplicationChargeServiceOp{client: c}
 	c.Metafield = &MetafieldServiceOp{client: c}
 	c.Blog = &BlogServiceOp{client: c}
+	c.Article = &ArticleServiceOp{client: c}
 	c.ApplicationCharge = &ApplicationChargeServiceOp{client: c}
 	c.Redirect = &RedirectServiceOp{client: c}
 	c.Page = &PageServiceOp{client: c}

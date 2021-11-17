@@ -17,7 +17,7 @@ func TestBlogList(t *testing.T) {
 		fmt.Sprintf("https://fooshop.myshopify.com/%s/blogs.json", client.pathPrefix),
 		httpmock.NewStringResponder(
 			200,
-			`{"blogs": [{"id":1},{"id":2}]}`,
+			`{"blogs": [{"id":112},{"id":222}]}`,
 		),
 	)
 
