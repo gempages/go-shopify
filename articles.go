@@ -43,7 +43,7 @@ type Article struct {
 	TemplateSuffix    string        `json:"template_suffix"`
 	Handle            string        `json:"handle"`
 	Tags              string        `json:"tags"`
-	AdminGraphqlApiID string        `json:"admin_graphql_api_id"`
+	AdminGraphqlAPIID string        `json:"admin_graphql_api_id"`
 	Image             *ImageArticle `json:"image"`
 	CreatedAt         *time.Time    `json:"created_at"`
 	UpdatedAt         *time.Time    `json:"updated_at"`
@@ -58,14 +58,6 @@ type ArticlesResource struct {
 // ArticleResource Represents the result from the articles.json endpoint
 type ArticleResource struct {
 	Article *Article `json:"article"`
-}
-
-// List all articles
-func (s *ArticleServiceOp) List(options interface{}) ([]Article, error) {
-	path := fmt.Sprintf("blogs/77604257930/articles.json")
-	resource := new(ArticlesResource)
-	err := s.client.Get(path, resource, options)
-	return resource.Articles, err
 }
 
 // GetByBlogID - Retrieves a list of all articles from a blog

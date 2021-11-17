@@ -44,7 +44,7 @@ type Page struct {
 	PublishedAt       *time.Time  `json:"published_at,omitempty"`
 	ShopID            int64       `json:"shop_id,omitempty"`
 	Metafields        []Metafield `json:"metafields,omitempty"`
-	AdminGraphqlApiID string      `json:"admin_graphql_api_id"`
+	AdminGraphqlAPIID string      `json:"admin_graphql_api_id"`
 }
 
 // PageResource represents the result from the pages/X.json endpoint

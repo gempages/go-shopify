@@ -49,7 +49,7 @@ func TestArticleCreate(t *testing.T) {
 		TemplateSuffix:    "",
 		Handle:            "hihihi",
 		Tags:              "",
-		AdminGraphqlApiID: "gid://shopify/OnlineStoreArticle/555885330570",
+		AdminGraphqlAPIID: "gid://shopify/OnlineStoreArticle/555885330570",
 		Image: &ImageArticle{
 			Alt:    "",
 			Width:  720,

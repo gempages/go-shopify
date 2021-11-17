@@ -39,7 +39,7 @@ type Blog struct {
 	TemplateSuffix     string     `json:"template_suffix"`
 	CreatedAt          *time.Time `json:"created_at"`
 	UpdatedAt          *time.Time `json:"updated_at"`
-	AdminGraphqlApiID  string     `json:"admin_graphql_api_id"`
+	AdminGraphqlAPIID  string     `json:"admin_graphql_api_id"`
 }
 
 // BlogsResource is the result from the blogs.json endpoint
