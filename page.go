@@ -13,6 +13,7 @@ const pagesResourceName = "pages"
 // See https://help.shopify.com/api/reference/online_store/page
 type PageService interface {
 	List(interface{}) ([]Page, error)
+	GetBySinceId(int64, int64, interface{}) ([]Page, error)
 	Count(interface{}) (int, error)
 	Get(int64, interface{}) (*Page, error)
 	Create(Page) (*Page, error)
@@ -32,17 +33,18 @@ type PageServiceOp struct {
 
 // Page represents a Shopify page.
 type Page struct {
-	ID             int64       `json:"id,omitempty"`
-	Author         string      `json:"author,omitempty"`
-	Handle         string      `json:"handle,omitempty"`
-	Title          string      `json:"title,omitempty"`
-	CreatedAt      *time.Time  `json:"created_at,omitempty"`
-	UpdatedAt      *time.Time  `json:"updated_at,omitempty"`
-	BodyHTML       string      `json:"body_html,omitempty"`
-	TemplateSuffix string      `json:"template_suffix,omitempty"`
-	PublishedAt    *time.Time  `json:"published_at,omitempty"`
-	ShopID         int64       `json:"shop_id,omitempty"`
-	Metafields     []Metafield `json:"metafields,omitempty"`
+	ID                int64       `json:"id,omitempty"`
+	Author            string      `json:"author,omitempty"`
+	Handle            string      `json:"handle,omitempty"`
+	Title             string      `json:"title,omitempty"`
+	CreatedAt         *time.Time  `json:"created_at,omitempty"`
+	UpdatedAt         *time.Time  `json:"updated_at,omitempty"`
+	BodyHTML          string      `json:"body_html,omitempty"`
+	TemplateSuffix    string      `json:"template_suffix,omitempty"`
+	PublishedAt       *time.Time  `json:"published_at,omitempty"`
+	ShopID            int64       `json:"shop_id,omitempty"`
+	Metafields        []Metafield `json:"metafields,omitempty"`
+	AdminGraphqlAPIID string      `json:"admin_graphql_api_id"`
 }
 
 // PageResource represents the result from the pages/X.json endpoint
@@ -58,6 +60,13 @@ type PagesResource struct {
 // List pages
 func (s *PageServiceOp) List(options interface{}) ([]Page, error) {
 	path := fmt.Sprintf("%s.json", pagesBasePath)
+	resource := new(PagesResource)
+	err := s.client.Get(path, resource, options)
+	return resource.Pages, err
+}
+
+func (s *PageServiceOp) GetBySinceId(sinceId int64, limit int64, options interface{}) ([]Page, error) {
+	path := fmt.Sprintf("%s.json?since_id=%v&limit=%v", pagesBasePath, sinceId, limit)
 	resource := new(PagesResource)
 	err := s.client.Get(path, resource, options)
 	return resource.Pages, err

@@ -17,7 +17,7 @@ func TestBlogList(t *testing.T) {
 		fmt.Sprintf("https://fooshop.myshopify.com/%s/blogs.json", client.pathPrefix),
 		httpmock.NewStringResponder(
 			200,
-			`{"blogs": [{"id":1},{"id":2}]}`,
+			`{"blogs": [{"id":112},{"id":222}]}`,
 		),
 	)
 
@@ -29,6 +29,32 @@ func TestBlogList(t *testing.T) {
 	expected := []Blog{{ID: 1}, {ID: 2}}
 	if !reflect.DeepEqual(blogs, expected) {
 		t.Errorf("Blog.List returned %+v, expected %+v", blogs, expected)
+	}
+
+}
+
+func TestBlogGetBySinceId(t *testing.T) {
+	setup()
+	defer teardown()
+	sinceId := int64(1)
+	limit := 2
+	httpmock.RegisterResponder(
+		"GET",
+		fmt.Sprintf("https://fooshop.myshopify.com/%s/blogs.json?since_id=%v&limit=%v", client.pathPrefix, sinceId, limit),
+		httpmock.NewStringResponder(
+			200,
+			`{"blogs": [{"id":112},{"id":222}]}`,
+		),
+	)
+
+	blogs, err := client.Blog.GetBySinceId(sinceId, limit, nil)
+	if err != nil {
+		t.Errorf("Blog.GetBySinceId returned error: %v", err)
+	}
+
+	expected := []Blog{{ID: 112}, {ID: 222}}
+	if !reflect.DeepEqual(blogs, expected) {
+		t.Errorf("Blog.GetBySinceId returned %+v, expected %+v", blogs, expected)
 	}
 
 }

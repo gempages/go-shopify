@@ -35,6 +35,32 @@ func TestPageList(t *testing.T) {
 	}
 }
 
+func TestPageGetBySinceId(t *testing.T) {
+	setup()
+	defer teardown()
+	sinceId := int64(1)
+	limit := int64(2)
+	httpmock.RegisterResponder(
+		"GET",
+		fmt.Sprintf("https://fooshop.myshopify.com/%s/pages.json?since_id=%v&limit=%v", client.pathPrefix, sinceId, limit),
+		httpmock.NewStringResponder(
+			200,
+			`{"pages": [{"id":112},{"id":222}]}`,
+		),
+	)
+
+	pages, err := client.Page.GetBySinceId(sinceId, limit, nil)
+	if err != nil {
+		t.Errorf("pages.GetBySinceId returned error: %v", err)
+	}
+
+	expected := []Page{{ID: 112}, {ID: 222}}
+	if !reflect.DeepEqual(pages, expected) {
+		t.Errorf("page.GetBySinceId returned %+v, expected %+v", pages, expected)
+	}
+
+}
+
 func TestPageCount(t *testing.T) {
 	setup()
 	defer teardown()

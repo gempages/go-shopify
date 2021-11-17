@@ -12,6 +12,7 @@ const blogsBasePath = "blogs"
 // See: https://help.shopify.com/api/reference/online_store/blog
 type BlogService interface {
 	List(interface{}) ([]Blog, error)
+	GetBySinceId(int64, int, interface{}) ([]Blog, error)
 	Count(interface{}) (int, error)
 	Get(int64, interface{}) (*Blog, error)
 	Create(Blog) (*Blog, error)
@@ -38,6 +39,7 @@ type Blog struct {
 	TemplateSuffix     string     `json:"template_suffix"`
 	CreatedAt          *time.Time `json:"created_at"`
 	UpdatedAt          *time.Time `json:"updated_at"`
+	AdminGraphqlAPIID  string     `json:"admin_graphql_api_id"`
 }
 
 // BlogsResource is the result from the blogs.json endpoint
@@ -53,6 +55,13 @@ type BlogResource struct {
 // List all blogs
 func (s *BlogServiceOp) List(options interface{}) ([]Blog, error) {
 	path := fmt.Sprintf("%s.json", blogsBasePath)
+	resource := new(BlogsResource)
+	err := s.client.Get(path, resource, options)
+	return resource.Blogs, err
+}
+
+func (s *BlogServiceOp) GetBySinceId(sinceId int64, limit int, options interface{}) ([]Blog, error) {
+	path := fmt.Sprintf("%s.json?since_id=%v&limit=%v", blogsBasePath, sinceId, limit)
 	resource := new(BlogsResource)
 	err := s.client.Get(path, resource, options)
 	return resource.Blogs, err
