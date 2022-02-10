@@ -15,6 +15,7 @@ const customersResourceName = "customers"
 // See: https://help.shopify.com/api/reference/customer
 type CustomerService interface {
 	List(interface{}) ([]Customer, error)
+	GetBySinceId(sinceId int64, limit int, options interface{}) ([]Customer, error)
 	Count(interface{}) (int, error)
 	Get(int64, interface{}) (*Customer, error)
 	Search(interface{}) ([]Customer, error)
@@ -57,6 +58,8 @@ type Customer struct {
 	CreatedAt           *time.Time         `json:"created_at,omitempty"`
 	UpdatedAt           *time.Time         `json:"updated_at,omitempty"`
 	Metafields          []Metafield        `json:"metafields,omitempty"`
+	AdminGraphqlAPIID   string             `json:"admin_graphql_api_id"`
+	Currency            string             `json:"currency"`
 }
 
 // Represents the result from the customers/X.json endpoint
@@ -86,6 +89,13 @@ type CustomerSearchOptions struct {
 // List customers
 func (s *CustomerServiceOp) List(options interface{}) ([]Customer, error) {
 	path := fmt.Sprintf("%s.json", customersBasePath)
+	resource := new(CustomersResource)
+	err := s.client.Get(path, resource, options)
+	return resource.Customers, err
+}
+
+func (s *CustomerServiceOp) GetBySinceId(sinceId int64, limit int, options interface{}) ([]Customer, error) {
+	path := fmt.Sprintf("%s.json?since_id=%v&limit=%v", customersBasePath, sinceId, limit)
 	resource := new(CustomersResource)
 	err := s.client.Get(path, resource, options)
 	return resource.Customers, err
