@@ -78,26 +78,27 @@ type Client struct {
 
 	// max number of retries, defaults to 0 for no retries see WithRetry option
 	retries  int
-	attempts int
+    attempts int
 
-	RateLimits RateLimitInfo
+    RateLimits RateLimitInfo
 
-	// Services used for communicating with the API
-	Product                    ProductService
-	CustomCollection           CustomCollectionService
-	SmartCollection            SmartCollectionService
-	Customer                   CustomerService
-	CustomerAddress            CustomerAddressService
-	Order                      OrderService
-	Fulfillment                FulfillmentService
-	DraftOrder                 DraftOrderService
-	Shop                       ShopService
-	Webhook                    WebhookService
-	Variant                    VariantService
-	Image                      ImageService
-	Transaction                TransactionService
-	Theme                      ThemeService
-	Asset                      AssetService
+    // Services used for communicating with the API
+    Product                    ProductService
+    CustomCollection           CustomCollectionService
+    SmartCollection            SmartCollectionService
+    Customer                   CustomerService
+    CustomerAddress            CustomerAddressService
+    CustomerSavedSearch        CustomerSavedSearchService
+    Order                      OrderService
+    Fulfillment                FulfillmentService
+    DraftOrder                 DraftOrderService
+    Shop                       ShopService
+    Webhook                    WebhookService
+    Variant                    VariantService
+    Image                      ImageService
+    Transaction                TransactionService
+    Theme                      ThemeService
+    Asset                      AssetService
 	ScriptTag                  ScriptTagService
 	RecurringApplicationCharge RecurringApplicationChargeService
 	UsageCharge                UsageChargeService
@@ -253,26 +254,27 @@ func NewClient(app App, shopName, token string, opts ...Option) *Client {
 		log:        &LeveledLogger{},
 		app:        app,
 		baseURL:    baseURL,
-		token:      token,
-		apiVersion: defaultApiVersion,
-		pathPrefix: defaultApiPathPrefix,
-	}
+        token:      token,
+        apiVersion: defaultApiVersion,
+        pathPrefix: defaultApiPathPrefix,
+    }
 
-	c.Product = &ProductServiceOp{client: c}
-	c.CustomCollection = &CustomCollectionServiceOp{client: c}
-	c.SmartCollection = &SmartCollectionServiceOp{client: c}
-	c.Customer = &CustomerServiceOp{client: c}
-	c.CustomerAddress = &CustomerAddressServiceOp{client: c}
-	c.Order = &OrderServiceOp{client: c}
-	c.Fulfillment = &FulfillmentServiceOp{client: c}
-	c.DraftOrder = &DraftOrderServiceOp{client: c}
-	c.Shop = &ShopServiceOp{client: c}
-	c.Webhook = &WebhookServiceOp{client: c}
-	c.Variant = &VariantServiceOp{client: c}
-	c.Image = &ImageServiceOp{client: c}
-	c.Transaction = &TransactionServiceOp{client: c}
-	c.Theme = &ThemeServiceOp{client: c}
-	c.Asset = &AssetServiceOp{client: c}
+    c.Product = &ProductServiceOp{client: c}
+    c.CustomCollection = &CustomCollectionServiceOp{client: c}
+    c.SmartCollection = &SmartCollectionServiceOp{client: c}
+    c.Customer = &CustomerServiceOp{client: c}
+    c.CustomerAddress = &CustomerAddressServiceOp{client: c}
+    c.CustomerSavedSearch = &CustomerSavedSearchServiceOp{client: c}
+    c.Order = &OrderServiceOp{client: c}
+    c.Fulfillment = &FulfillmentServiceOp{client: c}
+    c.DraftOrder = &DraftOrderServiceOp{client: c}
+    c.Shop = &ShopServiceOp{client: c}
+    c.Webhook = &WebhookServiceOp{client: c}
+    c.Variant = &VariantServiceOp{client: c}
+    c.Image = &ImageServiceOp{client: c}
+    c.Transaction = &TransactionServiceOp{client: c}
+    c.Theme = &ThemeServiceOp{client: c}
+    c.Asset = &AssetServiceOp{client: c}
 	c.ScriptTag = &ScriptTagServiceOp{client: c}
 	c.RecurringApplicationCharge = &RecurringApplicationChargeServiceOp{client: c}
 	c.Metafield = &MetafieldServiceOp{client: c}

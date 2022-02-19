@@ -14,6 +14,7 @@ const priceRulesBasePath = "price_rules"
 // See: https://shopify.dev/docs/admin-api/rest/reference/discounts/pricerule
 type PriceRuleService interface {
 	Get(int64) (*PriceRule, error)
+	GetBySinceId(int64, int, interface{}) ([]PriceRule, error)
 	Create(PriceRule) (*PriceRule, error)
 	Update(PriceRule) (*PriceRule, error)
 	List() ([]PriceRule, error)
@@ -55,10 +56,16 @@ type PriceRule struct {
 	PrerequisiteQuantityRange              *prerequisiteQuantityRange              `json:"prerequisite_quantity_range,omitempty"`
 	PrerequisiteShippingPriceRange         *prerequisiteShippingPriceRange         `json:"prerequisite_shipping_price_range,omitempty"`
 	PrerequisiteToEntitlementQuantityRatio *prerequisiteToEntitlementQuantityRatio `json:"prerequisite_to_entitlement_quantity_ratio,omitempty"`
+	PrerequisiteToEntitlementPurchase      *prerequisiteToEntitlementPurchase      `json:"prerequisite_to_entitlement_purchase,omitempty"`
+	AdminGraphqlAPIID                      string                                  `json:"admin_graphql_api_id"`
 }
 
 type prerequisiteSubtotalRange struct {
 	GreaterThanOrEqualTo string `json:"greater_than_or_equal_to,omitempty"`
+}
+
+type prerequisiteToEntitlementPurchase struct {
+	PrerequisiteAmount string `json:"prerequisite_amount,omitempty"`
 }
 
 type prerequisiteQuantityRange struct {
@@ -147,7 +154,7 @@ func (pr *PriceRule) SetPrerequisiteToEntitlementQuantityRatio(prerequisiteQuant
 
 	pr.PrerequisiteToEntitlementQuantityRatio = &prerequisiteToEntitlementQuantityRatio{
 		PrerequisiteQuantity: pQuant,
-		EntitledQuantity: eQuant,
+		EntitledQuantity:     eQuant,
 	}
 }
 
@@ -157,6 +164,13 @@ func (s *PriceRuleServiceOp) Get(priceRuleID int64) (*PriceRule, error) {
 	resource := new(PriceRuleResource)
 	err := s.client.Get(path, resource, nil)
 	return resource.PriceRule, err
+}
+
+func (s *PriceRuleServiceOp) GetBySinceId(sinceId int64, limit int, options interface{}) ([]PriceRule, error) {
+	path := fmt.Sprintf("%s.json?since_id=%v&limit=%v", priceRulesBasePath, sinceId, limit)
+	resource := new(PriceRulesResource)
+	err := s.client.Get(path, resource, options)
+	return resource.PriceRules, err
 }
 
 // List retrieves a list of price rules
