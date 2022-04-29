@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-const AccessScopeBasePath = "access_scopes"
+const AccessScopeBasePath = "oauth/access_scopes"
 
 // AccessScopeService is an interface for interfacing with the storefront access
 // token endpoints of the Shopify API.
