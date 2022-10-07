@@ -1,4 +1,4 @@
-module github.com/es-hs/go-shopify
+module github.com/gempages/go-shopify
 
 go 1.13
 
