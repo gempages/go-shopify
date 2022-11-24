@@ -9,7 +9,7 @@ import (
 // Option is used to configure client with options
 type Option func(c *Client)
 
-// WithVersion optionally sets the api-version if the passed string is valid
+// WithContext optionally sets the custom context
 func WithContext(ctx context.Context) Option {
 	return func(c *Client) {
 		c.ctx = ctx
