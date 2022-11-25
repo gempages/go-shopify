@@ -3,6 +3,7 @@ package goshopify
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -59,6 +60,8 @@ type Client struct {
 	Client *http.Client
 	log    LeveledLoggerInterface
 
+	// Context
+	ctx context.Context
 	// App settings
 	app App
 
@@ -215,7 +218,7 @@ func (c *Client) NewRequest(method, relPath string, body, options interface{}) (
 		}
 	}
 
-	req, err := http.NewRequest(method, u.String(), bytes.NewBuffer(js))
+	req, err := http.NewRequestWithContext(c.ctx, method, u.String(), bytes.NewBuffer(js))
 	if err != nil {
 		return nil, err
 	}
@@ -252,6 +255,7 @@ func NewClient(app App, shopName, token string, opts ...Option) *Client {
 		Client: &http.Client{
 			Timeout: time.Second * defaultHttpTimeout,
 		},
+		ctx:        context.Background(),
 		log:        &LeveledLogger{},
 		app:        app,
 		baseURL:    baseURL,

@@ -1,12 +1,20 @@
 package goshopify
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 )
 
 // Option is used to configure client with options
 type Option func(c *Client)
+
+// WithContext optionally sets the custom context
+func WithContext(ctx context.Context) Option {
+	return func(c *Client) {
+		c.ctx = ctx
+	}
+}
 
 // WithVersion optionally sets the api-version if the passed string is valid
 func WithVersion(apiVersion string) Option {
