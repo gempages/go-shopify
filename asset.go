@@ -34,6 +34,7 @@ type Asset struct {
 	Src         string     `json:"src"`
 	ThemeID     int64      `json:"theme_id"`
 	Value       string     `json:"value"`
+	Checksum    string     `json:"checksum"`
 	CreatedAt   *time.Time `json:"created_at"`
 	UpdatedAt   *time.Time `json:"updated_at"`
 }
