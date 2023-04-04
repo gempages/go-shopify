@@ -31,18 +31,19 @@ type CustomCollectionServiceOp struct {
 
 // CustomCollection represents a Shopify custom collection.
 type CustomCollection struct {
-	ID             int64       `json:"id"`
-	Handle         string      `json:"handle"`
-	Title          string      `json:"title"`
-	UpdatedAt      *time.Time  `json:"updated_at"`
-	BodyHTML       string      `json:"body_html"`
-	SortOrder      string      `json:"sort_order"`
-	TemplateSuffix string      `json:"template_suffix"`
-	Image          Image       `json:"image"`
-	Published      bool        `json:"published"`
-	PublishedAt    *time.Time  `json:"published_at"`
-	PublishedScope string      `json:"published_scope"`
-	Metafields     []Metafield `json:"metafields,omitempty"`
+	ID                int64       `json:"id"`
+	Handle            string      `json:"handle"`
+	Title             string      `json:"title"`
+	UpdatedAt         *time.Time  `json:"updated_at"`
+	BodyHTML          string      `json:"body_html"`
+	SortOrder         string      `json:"sort_order"`
+	TemplateSuffix    string      `json:"template_suffix"`
+	Image             Image       `json:"image"`
+	Published         bool        `json:"published"`
+	PublishedAt       *time.Time  `json:"published_at"`
+	PublishedScope    string      `json:"published_scope"`
+	Metafields        []Metafield `json:"metafields,omitempty"`
+	AdminGraphqlAPIID string      `json:"admin_graphql_api_id,omitempty"`
 }
 
 // CustomCollectionResource represents the result form the custom_collections/X.json endpoint

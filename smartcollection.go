@@ -37,20 +37,21 @@ type Rule struct {
 
 // SmartCollection represents a Shopify smart collection.
 type SmartCollection struct {
-	ID             int64       `json:"id"`
-	Handle         string      `json:"handle"`
-	Title          string      `json:"title"`
-	UpdatedAt      *time.Time  `json:"updated_at"`
-	BodyHTML       string      `json:"body_html"`
-	SortOrder      string      `json:"sort_order"`
-	TemplateSuffix string      `json:"template_suffix"`
-	Image          Image       `json:"image"`
-	Published      bool        `json:"published"`
-	PublishedAt    *time.Time  `json:"published_at"`
-	PublishedScope string      `json:"published_scope"`
-	Rules          []Rule      `json:"rules"`
-	Disjunctive    bool        `json:"disjunctive"`
-	Metafields     []Metafield `json:"metafields,omitempty"`
+	ID                int64       `json:"id"`
+	Handle            string      `json:"handle"`
+	Title             string      `json:"title"`
+	UpdatedAt         *time.Time  `json:"updated_at"`
+	BodyHTML          string      `json:"body_html"`
+	SortOrder         string      `json:"sort_order"`
+	TemplateSuffix    string      `json:"template_suffix"`
+	Image             Image       `json:"image"`
+	Published         bool        `json:"published"`
+	PublishedAt       *time.Time  `json:"published_at"`
+	PublishedScope    string      `json:"published_scope"`
+	Rules             []Rule      `json:"rules"`
+	Disjunctive       bool        `json:"disjunctive"`
+	Metafields        []Metafield `json:"metafields,omitempty"`
+	AdminGraphqlAPIID string      `json:"admin_graphql_api_id,omitempty"`
 }
 
 // SmartCollectionResource represents the result from the smart_collections/X.json endpoint
