@@ -640,3 +640,11 @@ func (c *Client) Put(path string, data, resource interface{}) error {
 func (c *Client) Delete(path string) error {
 	return c.CreateAndDo("DELETE", path, nil, nil, nil)
 }
+
+func IsOperationUrlEmptyError(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "Operation result URL is empty")
+}
+
+func IsInvalidTokenError(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "Invalid API key or access token")
+}
