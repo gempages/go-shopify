@@ -607,8 +607,17 @@ func (c *Client) Count(path string, options interface{}) (int, error) {
 func (c *Client) CreateAndDo(method, relPath string, data, options, resource interface{}) error {
 	_, err := c.createAndDoGetHeaders(method, relPath, data, options, resource)
 	if err != nil {
-		if respErr, ok := err.(ResponseError); ok && respErr.Status == http.StatusServiceUnavailable {
-			return errors.NewServiceUnavailableError(respErr.Status, respErr.Message, nil)
+		if respErr, ok := err.(RateLimitError); ok {
+			return errors.NewServiceUnavailableError(respErr.Status, "Shopify responded: "+respErr.Message, nil)
+		}
+		if respErr, ok := err.(ResponseError); ok {
+			if respErr.Status == http.StatusServiceUnavailable {
+				return errors.NewServiceUnavailableError(respErr.Status, "Shopify responded: "+respErr.Message, nil)
+			}
+			if respErr.Status == http.StatusUnauthorized {
+				// Should not return AuthenticationError from our lib here to avoid misunderstanding
+				return errors.NewValidationError(respErr.Status, "Shopify responded: "+respErr.Message, nil)
+			}
 		}
 		return err
 	}
