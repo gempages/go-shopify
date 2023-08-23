@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -18,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gempages/go-helper/errors"
 	"github.com/google/go-querystring/query"
 )
 
@@ -333,7 +333,7 @@ func (c *Client) doGetHeaders(req *http.Request, v interface{}) (http.Header, er
 		resp, err = c.Client.Do(req)
 		c.logResponse(resp)
 		if err != nil {
-			return nil, err //http client errors, not api responses
+			return nil, err // http client errors, not api responses
 		}
 
 		respErr := CheckResponseError(resp)
@@ -423,11 +423,11 @@ func (c *Client) logBody(body *io.ReadCloser, format string) {
 	if body == nil {
 		return
 	}
-	b, _ := ioutil.ReadAll(*body)
+	b, _ := io.ReadAll(*body)
 	if len(b) > 0 {
 		c.log.Debugf(format, string(b))
 	}
-	*body = ioutil.NopCloser(bytes.NewBuffer(b))
+	*body = io.NopCloser(bytes.NewBuffer(b))
 }
 
 func wrapSpecificError(r *http.Response, err ResponseError) error {
@@ -457,14 +457,20 @@ func CheckResponseError(r *http.Response) error {
 	if http.StatusOK <= r.StatusCode && r.StatusCode < http.StatusMultipleChoices {
 		return nil
 	}
+	if r.StatusCode == http.StatusServiceUnavailable {
+		return ResponseError{
+			Status:  r.StatusCode,
+			Message: "service unavailable",
+		}
+	}
 
-	// Create an anonoymous struct to parse the JSON data into.
+	// Create an anonymous struct to parse the JSON data into.
 	shopifyError := struct {
 		Error  string      `json:"error"`
 		Errors interface{} `json:"errors"`
 	}{}
 
-	bodyBytes, err := ioutil.ReadAll(r.Body)
+	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
@@ -597,6 +603,9 @@ func (c *Client) Count(path string, options interface{}) (int, error) {
 func (c *Client) CreateAndDo(method, relPath string, data, options, resource interface{}) error {
 	_, err := c.createAndDoGetHeaders(method, relPath, data, options, resource)
 	if err != nil {
+		if respErr, ok := err.(ResponseError); ok && respErr.Status == http.StatusServiceUnavailable {
+			return errors.NewServiceUnavailableError(respErr.Status, respErr.Message, nil)
+		}
 		return err
 	}
 	return nil
