@@ -432,8 +432,12 @@ func (c *Client) logBody(body *io.ReadCloser, format string) {
 
 func wrapSpecificError(r *http.Response, err ResponseError) error {
 	// see https://www.shopify.dev/concepts/about-apis/response-codes
-	if err.Status == http.StatusTooManyRequests {
+	// Note: even though the doc mentions that 430 is Shopify Security Rejection, it is actually used for TOO_MANY_REQUESTS error
+	if err.Status == http.StatusTooManyRequests || err.Status == 430 {
 		f, _ := strconv.ParseFloat(r.Header.Get("Retry-After"), 64)
+		if f == 0 {
+			f = 1
+		}
 		return RateLimitError{
 			ResponseError: err,
 			RetryAfter:    int(f),
