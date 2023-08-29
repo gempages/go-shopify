@@ -461,10 +461,24 @@ func CheckResponseError(r *http.Response) error {
 	if http.StatusOK <= r.StatusCode && r.StatusCode < http.StatusMultipleChoices {
 		return nil
 	}
-	if r.StatusCode == http.StatusServiceUnavailable {
+	// These status codes have HTML body, which will cause JSON decode error below
+	if r.StatusCode >= http.StatusInternalServerError && r.StatusCode <= http.StatusGatewayTimeout {
+		var msg string
+		switch r.StatusCode {
+		case http.StatusInternalServerError:
+			msg = "internal server error"
+		case http.StatusNotImplemented:
+			msg = "not implemented"
+		case http.StatusBadGateway:
+			msg = "bad gateway"
+		case http.StatusGatewayTimeout:
+			msg = "gateway timeout"
+		default:
+			msg = "service unavailable"
+		}
 		return ResponseError{
 			Status:  r.StatusCode,
-			Message: "service unavailable",
+			Message: msg,
 		}
 	}
 
@@ -610,8 +624,14 @@ func (c *Client) CreateAndDo(method, relPath string, data, options, resource int
 		if respErr, ok := err.(RateLimitError); ok {
 			return errors.NewServiceUnavailableError(respErr.Status, "Shopify responded: "+respErr.Message, nil)
 		}
+		if respErr, ok := err.(ResponseDecodingError); ok {
+			return errors.NewErrorWithContext(c.ctx, respErr, map[string]any{
+				"StatusCode": respErr.Status,
+				"Body":       string(respErr.Body),
+			})
+		}
 		if respErr, ok := err.(ResponseError); ok {
-			if respErr.Status == http.StatusServiceUnavailable {
+			if respErr.Status >= http.StatusInternalServerError && respErr.Status <= http.StatusGatewayTimeout {
 				return errors.NewServiceUnavailableError(respErr.Status, "Shopify responded: "+respErr.Message, nil)
 			}
 			if respErr.Status == http.StatusUnauthorized {
