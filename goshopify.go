@@ -161,18 +161,6 @@ func (e ResponseError) Error() string {
 	return "Unknown Error"
 }
 
-// ResponseDecodingError occurs when the response body from Shopify could
-// not be parsed.
-type ResponseDecodingError struct {
-	Body    []byte
-	Message string
-	Status  int
-}
-
-func (e ResponseDecodingError) Error() string {
-	return e.Message
-}
-
 // An error specific to a rate-limiting response. Embeds the ResponseError to
 // allow consumers to handle it the same was a normal ResponseError.
 type RateLimitError struct {
@@ -387,7 +375,7 @@ func (c *Client) doGetHeaders(req *http.Request, v interface{}) (http.Header, er
 		decoder := json.NewDecoder(resp.Body)
 		err := decoder.Decode(&v)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("decode response: %w", err)
 		}
 	}
 
@@ -498,10 +486,9 @@ func CheckResponseError(r *http.Response) error {
 	if len(bodyBytes) > 0 {
 		err := json.Unmarshal(bodyBytes, &shopifyError)
 		if err != nil {
-			return ResponseDecodingError{
-				Body:    bodyBytes,
-				Message: err.Error(),
+			return ResponseError{
 				Status:  r.StatusCode,
+				Message: string(bodyBytes),
 			}
 		}
 	}
@@ -623,12 +610,6 @@ func (c *Client) CreateAndDo(method, relPath string, data, options, resource int
 	if err != nil {
 		if respErr, ok := err.(RateLimitError); ok {
 			return errors.NewServiceUnavailableError(respErr.Status, "Shopify responded: "+respErr.Message, nil)
-		}
-		if respErr, ok := err.(ResponseDecodingError); ok {
-			return errors.NewErrorWithContext(c.ctx, respErr, map[string]any{
-				"StatusCode": respErr.Status,
-				"Body":       string(respErr.Body),
-			})
 		}
 		if respErr, ok := err.(ResponseError); ok {
 			if respErr.Status >= http.StatusInternalServerError && respErr.Status <= http.StatusGatewayTimeout {
