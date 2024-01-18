@@ -387,7 +387,7 @@ func (c *Client) doGetHeaders(req *http.Request, v interface{}) (http.Header, er
 		decoder := json.NewDecoder(resp.Body)
 		err := decoder.Decode(&v)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("decode response: %w", err)
 		}
 	}
 
