@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/gempages/go-helper/errors"
+	gphttp "github.com/gempages/go-helper/http"
 	"github.com/google/go-querystring/query"
 )
 
@@ -253,7 +254,8 @@ func NewClient(app App, shopName, token string, opts ...Option) *Client {
 
 	c := &Client{
 		Client: &http.Client{
-			Timeout: time.Second * defaultHttpTimeout,
+			Timeout:   time.Second * defaultHttpTimeout,
+			Transport: gphttp.NewTracedTransport(nil),
 		},
 		ctx:        context.Background(),
 		log:        &LeveledLogger{},
