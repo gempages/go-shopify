@@ -1,6 +1,7 @@
 package goshopify
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -10,7 +11,7 @@ const AccessScopeBasePath = "oauth/access_scopes"
 // token endpoints of the Shopify API.
 // See: https://help.shopify.com/api/reference/access/storefrontaccesstoken
 type AccessScopeService interface {
-	List(interface{}) ([]AccessScope, error)
+	List(context.Context, interface{}) ([]AccessScope, error)
 }
 
 // AccessScopeServiceOp handles communication with the storefront access token
@@ -21,9 +22,8 @@ type AccessScopeServiceOp struct {
 
 // AccessScope represents a Shopify storefront access token
 type AccessScope struct {
-	Handle             string     `json:"handle,omitempty"`
+	Handle string `json:"handle,omitempty"`
 }
-
 
 // AccessScopesResource is the root object for a storefront access tokens get request.
 type AccessScopesResource struct {
@@ -31,9 +31,9 @@ type AccessScopesResource struct {
 }
 
 // List storefront access tokens
-func (s *AccessScopeServiceOp) List(options interface{}) ([]AccessScope, error) {
+func (s *AccessScopeServiceOp) List(ctx context.Context, options interface{}) ([]AccessScope, error) {
 	path := fmt.Sprintf("%s.json", AccessScopeBasePath)
 	resource := new(AccessScopesResource)
-	err := s.client.Get(path, resource, options)
+	err := s.client.Get(ctx, path, resource, options)
 	return resource.AccessScopes, err
 }

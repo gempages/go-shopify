@@ -61,8 +61,6 @@ type Client struct {
 	Client *http.Client
 	log    LeveledLoggerInterface
 
-	// Context
-	ctx context.Context
 	// App settings
 	app App
 
@@ -185,7 +183,7 @@ type RateLimitError struct {
 // be resolved to the BaseURL of the Client. Relative URLS should always be
 // specified without a preceding slash. If specified, the value pointed to by
 // body is JSON encoded and included as the request body.
-func (c *Client) NewRequest(method, relPath string, body, options interface{}) (*http.Request, error) {
+func (c *Client) NewRequest(ctx context.Context, method, relPath string, body, options interface{}) (*http.Request, error) {
 	rel, err := url.Parse(relPath)
 	if err != nil {
 		return nil, err
@@ -219,7 +217,7 @@ func (c *Client) NewRequest(method, relPath string, body, options interface{}) (
 		}
 	}
 
-	req, err := http.NewRequestWithContext(c.ctx, method, u.String(), bytes.NewBuffer(js))
+	req, err := http.NewRequestWithContext(ctx, method, u.String(), bytes.NewBuffer(js))
 	if err != nil {
 		return nil, err
 	}
@@ -257,7 +255,6 @@ func NewClient(app App, shopName, token string, opts ...Option) *Client {
 			Timeout:   time.Second * defaultHttpTimeout,
 			Transport: gphttp.NewTracedTransport(nil),
 		},
-		ctx:        context.Background(),
 		log:        &LeveledLogger{},
 		app:        app,
 		baseURL:    baseURL,
@@ -603,11 +600,11 @@ type CountOptions struct {
 	UpdatedAtMax time.Time `url:"updated_at_max,omitempty"`
 }
 
-func (c *Client) Count(path string, options interface{}) (int, error) {
+func (c *Client) Count(ctx context.Context, path string, options interface{}) (int, error) {
 	resource := struct {
 		Count int `json:"count"`
 	}{}
-	err := c.Get(path, &resource, options)
+	err := c.Get(ctx, path, &resource, options)
 	return resource.Count, err
 }
 
@@ -620,14 +617,14 @@ func (c *Client) Count(path string, options interface{}) (int, error) {
 // The options argument is used for specifying request options such as search
 // parameters like created_at_min
 // Any data returned from Shopify will be marshalled into resource argument.
-func (c *Client) CreateAndDo(method, relPath string, data, options, resource interface{}) error {
-	_, err := c.createAndDoGetHeaders(method, relPath, data, options, resource)
+func (c *Client) CreateAndDo(ctx context.Context, method, relPath string, data, options, resource interface{}) error {
+	_, err := c.createAndDoGetHeaders(ctx, method, relPath, data, options, resource)
 	if err != nil {
 		if respErr, ok := err.(RateLimitError); ok {
 			return errors.NewServiceUnavailableError(respErr.Status, "Shopify responded: "+respErr.Message, nil)
 		}
 		if respErr, ok := err.(ResponseDecodingError); ok {
-			return errors.NewErrorWithContext(c.ctx, respErr, map[string]any{
+			return errors.NewErrorWithContext(ctx, respErr, map[string]any{
 				"StatusCode": respErr.Status,
 				"Body":       string(respErr.Body),
 			})
@@ -647,14 +644,14 @@ func (c *Client) CreateAndDo(method, relPath string, data, options, resource int
 }
 
 // createAndDoGetHeaders creates an executes a request while returning the response headers.
-func (c *Client) createAndDoGetHeaders(method, relPath string, data, options, resource interface{}) (http.Header, error) {
+func (c *Client) createAndDoGetHeaders(ctx context.Context, method, relPath string, data, options, resource interface{}) (http.Header, error) {
 	if strings.HasPrefix(relPath, "/") {
 		// make sure it's a relative path
 		relPath = strings.TrimLeft(relPath, "/")
 	}
 
 	relPath = path.Join(c.pathPrefix, relPath)
-	req, err := c.NewRequest(method, relPath, data, options)
+	req, err := c.NewRequest(ctx, method, relPath, data, options)
 	if err != nil {
 		return nil, err
 	}
@@ -664,25 +661,25 @@ func (c *Client) createAndDoGetHeaders(method, relPath string, data, options, re
 
 // Get performs a GET request for the given path and saves the result in the
 // given resource.
-func (c *Client) Get(path string, resource, options interface{}) error {
-	return c.CreateAndDo("GET", path, nil, options, resource)
+func (c *Client) Get(ctx context.Context, path string, resource, options interface{}) error {
+	return c.CreateAndDo(ctx, "GET", path, nil, options, resource)
 }
 
 // Post performs a POST request for the given path and saves the result in the
 // given resource.
-func (c *Client) Post(path string, data, resource interface{}) error {
-	return c.CreateAndDo("POST", path, data, nil, resource)
+func (c *Client) Post(ctx context.Context, path string, data, resource interface{}) error {
+	return c.CreateAndDo(ctx, "POST", path, data, nil, resource)
 }
 
 // Put performs a PUT request for the given path and saves the result in the
 // given resource.
-func (c *Client) Put(path string, data, resource interface{}) error {
-	return c.CreateAndDo("PUT", path, data, nil, resource)
+func (c *Client) Put(ctx context.Context, path string, data, resource interface{}) error {
+	return c.CreateAndDo(ctx, "PUT", path, data, nil, resource)
 }
 
 // Delete performs a DELETE request for the given path
-func (c *Client) Delete(path string) error {
-	return c.CreateAndDo("DELETE", path, nil, nil, nil)
+func (c *Client) Delete(ctx context.Context, path string) error {
+	return c.CreateAndDo(ctx, "DELETE", path, nil, nil, nil)
 }
 
 func IsOperationUrlEmptyError(err error) bool {

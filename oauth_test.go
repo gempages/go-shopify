@@ -1,6 +1,7 @@
 package goshopify
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -40,7 +41,7 @@ func TestAppGetAccessToken(t *testing.T) {
 		httpmock.NewStringResponder(200, `{"access_token":"footoken"}`))
 
 	app.Client = client
-	token, err := app.GetAccessToken("fooshop", "foocode")
+	token, err := app.GetAccessToken(context.Background(), "fooshop", "foocode")
 
 	if err != nil {
 		t.Fatalf("App.GetAccessToken(): %v", err)
@@ -59,7 +60,7 @@ func TestAppGetAccessTokenError(t *testing.T) {
 	// app.Client isn't specified so NewClient called
 	expectedError := errors.New("invalid_request")
 
-	token, err := app.GetAccessToken("fooshop", "")
+	token, err := app.GetAccessToken(context.Background(), "fooshop", "")
 
 	if err == nil || err.Error() != expectedError.Error() {
 		t.Errorf("Expected error %s got error %s", expectedError.Error(), err.Error())
@@ -70,7 +71,7 @@ func TestAppGetAccessTokenError(t *testing.T) {
 
 	expectedError = errors.New("parse ://example.com: missing protocol scheme")
 	accessTokenRelPath = "://example.com" // cause NewRequest to trip a parse error
-	token, err = app.GetAccessToken("fooshop", "")
+	token, err = app.GetAccessToken(context.Background(), "fooshop", "")
 	if err == nil || !strings.Contains(err.Error(), "missing protocol scheme") {
 		t.Errorf("Expected error %s got error %s", expectedError.Error(), err.Error())
 	}
@@ -126,7 +127,7 @@ func TestVerifyWebhookRequest(t *testing.T) {
 	for _, c := range cases {
 
 		testClient := NewClient(App{}, "", "")
-		req, err := testClient.NewRequest("GET", "", c.message, nil)
+		req, err := testClient.NewRequest(context.Background(), "GET", "", c.message, nil)
 		if err != nil {
 			t.Fatalf("Webhook.verify err = %v, expected true", err)
 		}
@@ -182,9 +183,9 @@ func TestVerifyWebhookRequestVerbose(t *testing.T) {
 
 		// We actually want to test nil body's, not ""
 		if c.message == "" {
-			req, err = testClient.NewRequest("GET", "", nil, nil)
+			req, err = testClient.NewRequest(context.Background(), "GET", "", nil, nil)
 		} else {
-			req, err = testClient.NewRequest("GET", "", c.message, nil)
+			req, err = testClient.NewRequest(context.Background(), "GET", "", c.message, nil)
 		}
 
 		if err != nil {

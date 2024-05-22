@@ -1,6 +1,7 @@
 package goshopify
 
 import (
+	"context"
 	"fmt"
 	"time"
 )
@@ -11,8 +12,8 @@ const collectsBasePath = "collects"
 // of the Shopify API.
 // See: https://help.shopify.com/api/reference/products/collect
 type CollectService interface {
-	List(interface{}) ([]Collect, error)
-	Count(interface{}) (int, error)
+	List(context.Context, interface{}) ([]Collect, error)
+	Count(context.Context, interface{}) (int, error)
 }
 
 // CollectServiceOp handles communication with the collect related methods of
@@ -44,15 +45,15 @@ type CollectsResource struct {
 }
 
 // List collects
-func (s *CollectServiceOp) List(options interface{}) ([]Collect, error) {
+func (s *CollectServiceOp) List(ctx context.Context, options interface{}) ([]Collect, error) {
 	path := fmt.Sprintf("%s.json", collectsBasePath)
 	resource := new(CollectsResource)
-	err := s.client.Get(path, resource, options)
+	err := s.client.Get(ctx, path, resource, options)
 	return resource.Collects, err
 }
 
 // Count collects
-func (s *CollectServiceOp) Count(options interface{}) (int, error) {
+func (s *CollectServiceOp) Count(ctx context.Context, options interface{}) (int, error) {
 	path := fmt.Sprintf("%s/count.json", collectsBasePath)
-	return s.client.Count(path, options)
+	return s.client.Count(ctx, path, options)
 }

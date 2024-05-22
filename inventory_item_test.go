@@ -1,6 +1,7 @@
 package goshopify
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -49,7 +50,7 @@ func TestInventoryItemsList(t *testing.T) {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("https://fooshop.myshopify.com/%s/inventory_items.json", client.pathPrefix),
 		httpmock.NewBytesResponder(200, loadFixture("inventory_items.json")))
 
-	items, err := client.InventoryItem.List(nil)
+	items, err := client.InventoryItem.List(context.Background(), nil)
 	if err != nil {
 		t.Errorf("InventoryItems.List returned error: %v", err)
 	}
@@ -75,7 +76,7 @@ func TestInventoryItemsListWithIDs(t *testing.T) {
 		IDs: []int64{1, 2},
 	}
 
-	items, err := client.InventoryItem.List(options)
+	items, err := client.InventoryItem.List(context.Background(), options)
 	if err != nil {
 		t.Errorf("InventoryItems.List returned error: %v", err)
 	}
@@ -90,7 +91,7 @@ func TestInventoryItemGet(t *testing.T) {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("https://fooshop.myshopify.com/%s/inventory_items/1.json", client.pathPrefix),
 		httpmock.NewBytesResponder(200, loadFixture("inventory_item.json")))
 
-	item, err := client.InventoryItem.Get(1, nil)
+	item, err := client.InventoryItem.Get(context.Background(), 1, nil)
 	if err != nil {
 		t.Errorf("InventoryItem.Get returned error: %v", err)
 	}
@@ -108,7 +109,7 @@ func TestInventoryItemUpdate(t *testing.T) {
 		ID: 1,
 	}
 
-	updatedItem, err := client.InventoryItem.Update(item)
+	updatedItem, err := client.InventoryItem.Update(context.Background(), item)
 	if err != nil {
 		t.Errorf("InentoryItem.Update returned error: %v", err)
 	}
