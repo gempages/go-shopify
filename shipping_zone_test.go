@@ -1,6 +1,7 @@
 package goshopify
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -53,7 +54,7 @@ func TestShippingZoneListError(t *testing.T) {
 
 	expectedErrMessage := "Unknown Error"
 
-	shippingZones, err := client.ShippingZone.List()
+	shippingZones, err := client.ShippingZone.List(context.Background())
 	if shippingZones != nil {
 		t.Errorf("ShippingZone.List returned shippingZones, expected nil: %v", err)
 	}
@@ -69,7 +70,7 @@ func TestShippingZoneList(t *testing.T) {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("https://fooshop.myshopify.com/%s/shipping_zones.json", client.pathPrefix),
 		httpmock.NewBytesResponder(200, loadFixture("shipping_zones.json")))
 
-	shippingZones, err := client.ShippingZone.List()
+	shippingZones, err := client.ShippingZone.List(context.Background())
 	if err != nil {
 		t.Errorf("ShippingZone.List returned error: %v", err)
 	}

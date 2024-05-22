@@ -1,6 +1,7 @@
 package goshopify
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -23,7 +24,7 @@ func TestOrderListError(t *testing.T) {
 
 	expectedErrMessage := "Unknown Error"
 
-	orders, err := client.Order.List(nil)
+	orders, err := client.Order.List(context.Background(), nil)
 	if orders != nil {
 		t.Errorf("Order.List returned orders, expected nil: %v", err)
 	}
@@ -128,7 +129,7 @@ func TestOrderListWithPagination(t *testing.T) {
 
 		httpmock.RegisterResponder("GET", listURL, httpmock.ResponderFromResponse(response))
 
-		orders, pagination, err := client.Order.ListWithPagination(nil)
+		orders, pagination, err := client.Order.ListWithPagination(context.Background(), nil)
 		if !reflect.DeepEqual(orders, c.expectedOrders) {
 			t.Errorf("test %d Order.ListWithPagination orders returned %+v, expected %+v", i, orders, c.expectedOrders)
 		}
@@ -215,7 +216,7 @@ func TestOrderList(t *testing.T) {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders.json", client.pathPrefix),
 		httpmock.NewBytesResponder(200, loadFixture("orders.json")))
 
-	orders, err := client.Order.List(nil)
+	orders, err := client.Order.List(context.Background(), nil)
 	if err != nil {
 		t.Errorf("Order.List returned error: %v", err)
 	}
@@ -254,7 +255,7 @@ func TestOrderListOptions(t *testing.T) {
 		Status: "any",
 	}
 
-	orders, err := client.Order.List(options)
+	orders, err := client.Order.List(context.Background(), options)
 	if err != nil {
 		t.Errorf("Order.List returned error: %v", err)
 	}
@@ -275,7 +276,7 @@ func TestOrderGet(t *testing.T) {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/123456.json", client.pathPrefix),
 		httpmock.NewBytesResponder(200, loadFixture("order.json")))
 
-	order, err := client.Order.Get(123456, nil)
+	order, err := client.Order.Get(context.Background(), 123456, nil)
 	if err != nil {
 		t.Errorf("Order.List returned error: %v", err)
 	}
@@ -302,7 +303,7 @@ func TestOrderGetWithTransactions(t *testing.T) {
 		ApiFeatures string `url:"_apiFeatures"`
 	}{"include-transactions"}
 
-	order, err := client.Order.Get(123456, options)
+	order, err := client.Order.Get(context.Background(), 123456, options)
 	if err != nil {
 		t.Errorf("Order.List returned error: %v", err)
 	}
@@ -334,7 +335,7 @@ func TestOrderCount(t *testing.T) {
 		params,
 		httpmock.NewStringResponder(200, `{"count": 2}`))
 
-	cnt, err := client.Order.Count(nil)
+	cnt, err := client.Order.Count(context.Background(), nil)
 	if err != nil {
 		t.Errorf("Order.Count returned error: %v", err)
 	}
@@ -345,7 +346,7 @@ func TestOrderCount(t *testing.T) {
 	}
 
 	date := time.Date(2016, time.January, 1, 0, 0, 0, 0, time.UTC)
-	cnt, err = client.Order.Count(OrderCountOptions{CreatedAtMin: date})
+	cnt, err = client.Order.Count(context.Background(), OrderCountOptions{CreatedAtMin: date})
 	if err != nil {
 		t.Errorf("Order.Count returned error: %v", err)
 	}
@@ -372,7 +373,7 @@ func TestOrderCreate(t *testing.T) {
 		},
 	}
 
-	o, err := client.Order.Create(order)
+	o, err := client.Order.Create(context.Background(), order)
 	if err != nil {
 		t.Errorf("Order.Create returned error: %v", err)
 	}
@@ -396,7 +397,7 @@ func TestOrderUpdate(t *testing.T) {
 		FulfillmentStatus: "fulfilled",
 	}
 
-	o, err := client.Order.Update(order)
+	o, err := client.Order.Update(context.Background(), order)
 	if err != nil {
 		t.Errorf("Order.Update returned error: %v", err)
 	}
@@ -414,7 +415,7 @@ func TestOrderCancel(t *testing.T) {
 	httpmock.RegisterResponder("POST", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/123456/cancel.json", client.pathPrefix),
 		httpmock.NewBytesResponder(200, loadFixture("order_with_transaction.json")))
 
-	order, err := client.Order.Cancel(123456, nil)
+	order, err := client.Order.Cancel(context.Background(), 123456, nil)
 	if err != nil {
 		t.Errorf("Order.Update returned error: %v", err)
 	}
@@ -436,7 +437,7 @@ func TestOrderClose(t *testing.T) {
 	httpmock.RegisterResponder("POST", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/123456/close.json", client.pathPrefix),
 		httpmock.NewStringResponder(200, `{"order":{"closed_at":"2016-05-17T04:14:36-04:00"}}`))
 
-	order, err := client.Order.Close(123456)
+	order, err := client.Order.Close(context.Background(), 123456)
 	if err != nil {
 		t.Errorf("Order.Update returned error: %v", err)
 	}
@@ -456,7 +457,7 @@ func TestOrderOpen(t *testing.T) {
 	httpmock.RegisterResponder("POST", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/123456/open.json", client.pathPrefix),
 		httpmock.NewStringResponder(200, `{"order":{"closed_at":null}}`))
 
-	order, err := client.Order.Open(123456)
+	order, err := client.Order.Open(context.Background(), 123456)
 	if err != nil {
 		t.Errorf("Order.Update returned error: %v", err)
 	}
@@ -473,7 +474,7 @@ func TestOrderListMetafields(t *testing.T) {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/1/metafields.json", client.pathPrefix),
 		httpmock.NewStringResponder(200, `{"metafields": [{"id":1},{"id":2}]}`))
 
-	metafields, err := client.Order.ListMetafields(1, nil)
+	metafields, err := client.Order.ListMetafields(context.Background(), 1, nil)
 	if err != nil {
 		t.Errorf("Order.ListMetafields() returned error: %v", err)
 	}
@@ -498,7 +499,7 @@ func TestOrderCountMetafields(t *testing.T) {
 		params,
 		httpmock.NewStringResponder(200, `{"count": 2}`))
 
-	cnt, err := client.Order.CountMetafields(1, nil)
+	cnt, err := client.Order.CountMetafields(context.Background(), 1, nil)
 	if err != nil {
 		t.Errorf("Order.CountMetafields() returned error: %v", err)
 	}
@@ -509,7 +510,7 @@ func TestOrderCountMetafields(t *testing.T) {
 	}
 
 	date := time.Date(2016, time.January, 1, 0, 0, 0, 0, time.UTC)
-	cnt, err = client.Order.CountMetafields(1, CountOptions{CreatedAtMin: date})
+	cnt, err = client.Order.CountMetafields(context.Background(), 1, CountOptions{CreatedAtMin: date})
 	if err != nil {
 		t.Errorf("Order.CountMetafields() returned error: %v", err)
 	}
@@ -527,7 +528,7 @@ func TestOrderGetMetafield(t *testing.T) {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/1/metafields/2.json", client.pathPrefix),
 		httpmock.NewStringResponder(200, `{"metafield": {"id":2}}`))
 
-	metafield, err := client.Order.GetMetafield(1, 2, nil)
+	metafield, err := client.Order.GetMetafield(context.Background(), 1, 2, nil)
 	if err != nil {
 		t.Errorf("Order.GetMetafield() returned error: %v", err)
 	}
@@ -552,7 +553,7 @@ func TestOrderCreateMetafield(t *testing.T) {
 		Namespace: "affiliates",
 	}
 
-	returnedMetafield, err := client.Order.CreateMetafield(1, metafield)
+	returnedMetafield, err := client.Order.CreateMetafield(context.Background(), 1, metafield)
 	if err != nil {
 		t.Errorf("Order.CreateMetafield() returned error: %v", err)
 	}
@@ -575,7 +576,7 @@ func TestOrderUpdateMetafield(t *testing.T) {
 		Namespace: "affiliates",
 	}
 
-	returnedMetafield, err := client.Order.UpdateMetafield(1, metafield)
+	returnedMetafield, err := client.Order.UpdateMetafield(context.Background(), 1, metafield)
 	if err != nil {
 		t.Errorf("Order.UpdateMetafield() returned error: %v", err)
 	}
@@ -590,7 +591,7 @@ func TestOrderDeleteMetafield(t *testing.T) {
 	httpmock.RegisterResponder("DELETE", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/1/metafields/2.json", client.pathPrefix),
 		httpmock.NewStringResponder(200, "{}"))
 
-	err := client.Order.DeleteMetafield(1, 2)
+	err := client.Order.DeleteMetafield(context.Background(), 1, 2)
 	if err != nil {
 		t.Errorf("Order.DeleteMetafield() returned error: %v", err)
 	}
@@ -603,7 +604,7 @@ func TestOrderListFulfillments(t *testing.T) {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/1/fulfillments.json", client.pathPrefix),
 		httpmock.NewStringResponder(200, `{"fulfillments": [{"id":1},{"id":2}]}`))
 
-	fulfillments, err := client.Order.ListFulfillments(1, nil)
+	fulfillments, err := client.Order.ListFulfillments(context.Background(), 1, nil)
 	if err != nil {
 		t.Errorf("Order.ListFulfillments() returned error: %v", err)
 	}
@@ -628,7 +629,7 @@ func TestOrderCountFulfillments(t *testing.T) {
 		params,
 		httpmock.NewStringResponder(200, `{"count": 2}`))
 
-	cnt, err := client.Order.CountFulfillments(1, nil)
+	cnt, err := client.Order.CountFulfillments(context.Background(), 1, nil)
 	if err != nil {
 		t.Errorf("Order.CountFulfillments() returned error: %v", err)
 	}
@@ -639,7 +640,7 @@ func TestOrderCountFulfillments(t *testing.T) {
 	}
 
 	date := time.Date(2016, time.January, 1, 0, 0, 0, 0, time.UTC)
-	cnt, err = client.Order.CountFulfillments(1, CountOptions{CreatedAtMin: date})
+	cnt, err = client.Order.CountFulfillments(context.Background(), 1, CountOptions{CreatedAtMin: date})
 	if err != nil {
 		t.Errorf("Order.CountFulfillments() returned error: %v", err)
 	}
@@ -657,7 +658,7 @@ func TestOrderGetFulfillment(t *testing.T) {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/1/fulfillments/2.json", client.pathPrefix),
 		httpmock.NewStringResponder(200, `{"fulfillment": {"id":2}}`))
 
-	fulfillment, err := client.Order.GetFulfillment(1, 2, nil)
+	fulfillment, err := client.Order.GetFulfillment(context.Background(), 1, 2, nil)
 	if err != nil {
 		t.Errorf("Order.GetFulfillment() returned error: %v", err)
 	}
@@ -685,7 +686,7 @@ func TestOrderCreateFulfillment(t *testing.T) {
 		NotifyCustomer: true,
 	}
 
-	returnedFulfillment, err := client.Order.CreateFulfillment(1, fulfillment)
+	returnedFulfillment, err := client.Order.CreateFulfillment(context.Background(), 1, fulfillment)
 	if err != nil {
 		t.Errorf("Order.CreateFulfillment() returned error: %v", err)
 	}
@@ -704,7 +705,7 @@ func TestOrderUpdateFulfillment(t *testing.T) {
 		ID:             1022782888,
 		TrackingNumber: "987654321",
 	}
-	returnedFulfillment, err := client.Order.UpdateFulfillment(1, fulfillment)
+	returnedFulfillment, err := client.Order.UpdateFulfillment(context.Background(), 1, fulfillment)
 	if err != nil {
 		t.Errorf("Order.UpdateFulfillment() returned error: %v", err)
 	}
@@ -719,7 +720,7 @@ func TestOrderCompleteFulfillment(t *testing.T) {
 	httpmock.RegisterResponder("POST", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/1/fulfillments/2/complete.json", client.pathPrefix),
 		httpmock.NewBytesResponder(200, loadFixture("fulfillment.json")))
 
-	returnedFulfillment, err := client.Order.CompleteFulfillment(1, 2)
+	returnedFulfillment, err := client.Order.CompleteFulfillment(context.Background(), 1, 2)
 	if err != nil {
 		t.Errorf("Order.CompleteFulfillment() returned error: %v", err)
 	}
@@ -734,7 +735,7 @@ func TestOrderTransitionFulfillment(t *testing.T) {
 	httpmock.RegisterResponder("POST", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/1/fulfillments/2/open.json", client.pathPrefix),
 		httpmock.NewBytesResponder(200, loadFixture("fulfillment.json")))
 
-	returnedFulfillment, err := client.Order.TransitionFulfillment(1, 2)
+	returnedFulfillment, err := client.Order.TransitionFulfillment(context.Background(), 1, 2)
 	if err != nil {
 		t.Errorf("Order.TransitionFulfillment() returned error: %v", err)
 	}
@@ -749,7 +750,7 @@ func TestOrderCancelFulfillment(t *testing.T) {
 	httpmock.RegisterResponder("POST", fmt.Sprintf("https://fooshop.myshopify.com/%s/orders/1/fulfillments/2/cancel.json", client.pathPrefix),
 		httpmock.NewBytesResponder(200, loadFixture("fulfillment.json")))
 
-	returnedFulfillment, err := client.Order.CancelFulfillment(1, 2)
+	returnedFulfillment, err := client.Order.CancelFulfillment(context.Background(), 1, 2)
 	if err != nil {
 		t.Errorf("Order.CancelFulfillment() returned error: %v", err)
 	}

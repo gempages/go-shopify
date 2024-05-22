@@ -1,6 +1,7 @@
 package goshopify
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"testing"
@@ -37,7 +38,7 @@ func TestCollectList(t *testing.T) {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("https://fooshop.myshopify.com/%s/collects.json", client.pathPrefix),
 		httpmock.NewStringResponder(200, `{"collects": [{"id":1},{"id":2}]}`))
 
-	collects, err := client.Collect.List(nil)
+	collects, err := client.Collect.List(context.Background(), nil)
 	if err != nil {
 		t.Errorf("Collect.List returned error: %v", err)
 	}
@@ -61,7 +62,7 @@ func TestCollectCount(t *testing.T) {
 		params,
 		httpmock.NewStringResponder(200, `{"count": 2}`))
 
-	cnt, err := client.Collect.Count(nil)
+	cnt, err := client.Collect.Count(context.Background(), nil)
 	if err != nil {
 		t.Errorf("Collect.Count returned error: %v", err)
 	}
@@ -71,7 +72,7 @@ func TestCollectCount(t *testing.T) {
 		t.Errorf("Collect.Count returned %d, expected %d", cnt, expected)
 	}
 
-	cnt, err = client.Collect.Count(ListOptions{SinceID: 123})
+	cnt, err = client.Collect.Count(context.Background(), ListOptions{SinceID: 123})
 	if err != nil {
 		t.Errorf("Collect.Count returned error: %v", err)
 	}

@@ -1,6 +1,7 @@
 package goshopify
 
 import (
+	"context"
 	"fmt"
 	"time"
 )
@@ -9,12 +10,12 @@ import (
 // of the Shopify API.
 // See: https://shopify.dev/api/admin-rest/2021-10/resources/article#top
 type ArticleService interface {
-	GetByBlogID(blogID int64, limit int, sinceId int64, options interface{}) (*[]Article, error)
-	GetByBlogIDAndArticleID(int64, int64, interface{}) (*Article, error)
-	GetCountByBlogID(int64, interface{}) (int, error)
-	Create(int64, *Article) (*Article, error)
-	Update(int64, int64, *Article) (*Article, error)
-	Delete(int64, int64) error
+	GetByBlogID(ctx context.Context, blogID int64, limit int, sinceId int64, options interface{}) (*[]Article, error)
+	GetByBlogIDAndArticleID(context.Context, int64, int64, interface{}) (*Article, error)
+	GetCountByBlogID(context.Context, int64, interface{}) (int, error)
+	Create(context.Context, int64, *Article) (*Article, error)
+	Update(context.Context, int64, int64, *Article) (*Article, error)
+	Delete(context.Context, int64, int64) error
 }
 
 // ArticleServiceOp handles communication with the blog related methods of
@@ -61,46 +62,46 @@ type ArticleResource struct {
 }
 
 // GetByBlogID - Retrieves a list of all articles from a blog
-func (s *ArticleServiceOp) GetByBlogID(blogID int64, limit int, sinceId int64, options interface{}) (*[]Article, error) {
+func (s *ArticleServiceOp) GetByBlogID(ctx context.Context, blogID int64, limit int, sinceId int64, options interface{}) (*[]Article, error) {
 	path := fmt.Sprintf("blogs/%v/articles.json?limit=%v&since_id=%v", blogID, limit, sinceId)
 	resource := new(ArticlesResource)
-	err := s.client.Get(path, resource, options)
+	err := s.client.Get(ctx, path, resource, options)
 	return &resource.Articles, err
 }
 
 // GetByBlogIDAndArticleID Receive a single Article
-func (s *ArticleServiceOp) GetByBlogIDAndArticleID(blogID int64, articleID int64, options interface{}) (resource *Article, err error) {
+func (s *ArticleServiceOp) GetByBlogIDAndArticleID(ctx context.Context, blogID int64, articleID int64, options interface{}) (resource *Article, err error) {
 	path := fmt.Sprintf("blogs/%v/articles/%v.json", blogID, articleID)
-	err = s.client.Get(path, resource, options)
+	err = s.client.Get(ctx, path, resource, options)
 	return resource, err
 }
 
 // GetCountByBlogID - Retrieves a count of all articles from a blog
-func (s *ArticleServiceOp) GetCountByBlogID(blogID int64, options interface{}) (int, error) {
+func (s *ArticleServiceOp) GetCountByBlogID(ctx context.Context, blogID int64, options interface{}) (int, error) {
 	path := fmt.Sprintf("blogs/%v/articles/count.json", blogID)
-	return s.client.Count(path, options)
+	return s.client.Count(ctx, path, options)
 }
 
 // Create - Create a new article
-func (s *ArticleServiceOp) Create(blogID int64, article *Article) (*Article, error) {
+func (s *ArticleServiceOp) Create(ctx context.Context, blogID int64, article *Article) (*Article, error) {
 	path := fmt.Sprintf("blogs/%v/articles.json", blogID)
 	wrappedData := ArticleResource{Article: article}
 	resource := ArticleResource{}
-	err := s.client.Post(path, wrappedData, &resource)
+	err := s.client.Post(ctx, path, wrappedData, &resource)
 	return resource.Article, err
 
 }
 
 // Update - Update a new article
-func (s *ArticleServiceOp) Update(blogID int64, articleID int64, article *Article) (*Article, error) {
+func (s *ArticleServiceOp) Update(ctx context.Context, blogID int64, articleID int64, article *Article) (*Article, error) {
 	path := fmt.Sprintf("blogs/%v/articles/%v.json", blogID, articleID)
 	wrappedData := ArticleResource{Article: article}
 	resource := new(ArticleResource)
-	err := s.client.Put(path, wrappedData, resource)
+	err := s.client.Put(ctx, path, wrappedData, resource)
 	return resource.Article, err
 }
 
 // Delete an existing product
-func (s *ArticleServiceOp) Delete(blogID int64, articleID int64) error {
-	return s.client.Delete(fmt.Sprintf("blogs/%v/articles/%v.json", blogID, articleID))
+func (s *ArticleServiceOp) Delete(ctx context.Context, blogID int64, articleID int64) error {
+	return s.client.Delete(ctx, fmt.Sprintf("blogs/%v/articles/%v.json", blogID, articleID))
 }

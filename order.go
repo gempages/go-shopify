@@ -1,6 +1,7 @@
 package goshopify
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -16,15 +17,15 @@ const ordersResourceName = "orders"
 // the Shopify API.
 // See: https://help.shopify.com/api/reference/order
 type OrderService interface {
-	List(interface{}) ([]Order, error)
-	ListWithPagination(interface{}) ([]Order, *Pagination, error)
-	Count(interface{}) (int, error)
-	Get(int64, interface{}) (*Order, error)
-	Create(Order) (*Order, error)
-	Update(Order) (*Order, error)
-	Cancel(int64, interface{}) (*Order, error)
-	Close(int64) (*Order, error)
-	Open(int64) (*Order, error)
+	List(context.Context, interface{}) ([]Order, error)
+	ListWithPagination(context.Context, interface{}) ([]Order, *Pagination, error)
+	Count(context.Context, interface{}) (int, error)
+	Get(context.Context, int64, interface{}) (*Order, error)
+	Create(context.Context, Order) (*Order, error)
+	Update(context.Context, Order) (*Order, error)
+	Cancel(context.Context, int64, interface{}) (*Order, error)
+	Close(context.Context, int64) (*Order, error)
+	Open(context.Context, int64) (*Order, error)
 
 	// MetafieldsService used for Order resource to communicate with Metafields resource
 	MetafieldsService
@@ -377,20 +378,20 @@ type RefundLineItem struct {
 }
 
 // List orders
-func (s *OrderServiceOp) List(options interface{}) ([]Order, error) {
-	orders, _, err := s.ListWithPagination(options)
+func (s *OrderServiceOp) List(ctx context.Context, options interface{}) ([]Order, error) {
+	orders, _, err := s.ListWithPagination(ctx, options)
 	if err != nil {
 		return nil, err
 	}
 	return orders, nil
 }
 
-func (s *OrderServiceOp) ListWithPagination(options interface{}) ([]Order, *Pagination, error) {
+func (s *OrderServiceOp) ListWithPagination(ctx context.Context, options interface{}) ([]Order, *Pagination, error) {
 	path := fmt.Sprintf("%s.json", ordersBasePath)
 	resource := new(OrdersResource)
 	headers := http.Header{}
 
-	headers, err := s.client.createAndDoGetHeaders("GET", path, nil, options, resource)
+	headers, err := s.client.createAndDoGetHeaders(ctx, "GET", path, nil, options, resource)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -407,141 +408,141 @@ func (s *OrderServiceOp) ListWithPagination(options interface{}) ([]Order, *Pagi
 }
 
 // Count orders
-func (s *OrderServiceOp) Count(options interface{}) (int, error) {
+func (s *OrderServiceOp) Count(ctx context.Context, options interface{}) (int, error) {
 	path := fmt.Sprintf("%s/count.json", ordersBasePath)
-	return s.client.Count(path, options)
+	return s.client.Count(ctx, path, options)
 }
 
 // Get individual order
-func (s *OrderServiceOp) Get(orderID int64, options interface{}) (*Order, error) {
+func (s *OrderServiceOp) Get(ctx context.Context, orderID int64, options interface{}) (*Order, error) {
 	path := fmt.Sprintf("%s/%d.json", ordersBasePath, orderID)
 	resource := new(OrderResource)
-	err := s.client.Get(path, resource, options)
+	err := s.client.Get(ctx, path, resource, options)
 	return resource.Order, err
 }
 
 // Create order
-func (s *OrderServiceOp) Create(order Order) (*Order, error) {
+func (s *OrderServiceOp) Create(ctx context.Context, order Order) (*Order, error) {
 	path := fmt.Sprintf("%s.json", ordersBasePath)
 	wrappedData := OrderResource{Order: &order}
 	resource := new(OrderResource)
-	err := s.client.Post(path, wrappedData, resource)
+	err := s.client.Post(ctx, path, wrappedData, resource)
 	return resource.Order, err
 }
 
 // Update order
-func (s *OrderServiceOp) Update(order Order) (*Order, error) {
+func (s *OrderServiceOp) Update(ctx context.Context, order Order) (*Order, error) {
 	path := fmt.Sprintf("%s/%d.json", ordersBasePath, order.ID)
 	wrappedData := OrderResource{Order: &order}
 	resource := new(OrderResource)
-	err := s.client.Put(path, wrappedData, resource)
+	err := s.client.Put(ctx, path, wrappedData, resource)
 	return resource.Order, err
 }
 
 // Cancel order
-func (s *OrderServiceOp) Cancel(orderID int64, options interface{}) (*Order, error) {
+func (s *OrderServiceOp) Cancel(ctx context.Context, orderID int64, options interface{}) (*Order, error) {
 	path := fmt.Sprintf("%s/%d/cancel.json", ordersBasePath, orderID)
 	resource := new(OrderResource)
-	err := s.client.Post(path, options, resource)
+	err := s.client.Post(ctx, path, options, resource)
 	return resource.Order, err
 }
 
 // Close order
-func (s *OrderServiceOp) Close(orderID int64) (*Order, error) {
+func (s *OrderServiceOp) Close(ctx context.Context, orderID int64) (*Order, error) {
 	path := fmt.Sprintf("%s/%d/close.json", ordersBasePath, orderID)
 	resource := new(OrderResource)
-	err := s.client.Post(path, nil, resource)
+	err := s.client.Post(ctx, path, nil, resource)
 	return resource.Order, err
 }
 
 // Open order
-func (s *OrderServiceOp) Open(orderID int64) (*Order, error) {
+func (s *OrderServiceOp) Open(ctx context.Context, orderID int64) (*Order, error) {
 	path := fmt.Sprintf("%s/%d/open.json", ordersBasePath, orderID)
 	resource := new(OrderResource)
-	err := s.client.Post(path, nil, resource)
+	err := s.client.Post(ctx, path, nil, resource)
 	return resource.Order, err
 }
 
 // List metafields for an order
-func (s *OrderServiceOp) ListMetafields(orderID int64, options interface{}) ([]Metafield, error) {
+func (s *OrderServiceOp) ListMetafields(ctx context.Context, orderID int64, options interface{}) ([]Metafield, error) {
 	metafieldService := &MetafieldServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return metafieldService.List(options)
+	return metafieldService.List(ctx, options)
 }
 
 // Count metafields for an order
-func (s *OrderServiceOp) CountMetafields(orderID int64, options interface{}) (int, error) {
+func (s *OrderServiceOp) CountMetafields(ctx context.Context, orderID int64, options interface{}) (int, error) {
 	metafieldService := &MetafieldServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return metafieldService.Count(options)
+	return metafieldService.Count(ctx, options)
 }
 
 // Get individual metafield for an order
-func (s *OrderServiceOp) GetMetafield(orderID int64, metafieldID int64, options interface{}) (*Metafield, error) {
+func (s *OrderServiceOp) GetMetafield(ctx context.Context, orderID int64, metafieldID int64, options interface{}) (*Metafield, error) {
 	metafieldService := &MetafieldServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return metafieldService.Get(metafieldID, options)
+	return metafieldService.Get(ctx, metafieldID, options)
 }
 
 // Create a new metafield for an order
-func (s *OrderServiceOp) CreateMetafield(orderID int64, metafield Metafield) (*Metafield, error) {
+func (s *OrderServiceOp) CreateMetafield(ctx context.Context, orderID int64, metafield Metafield) (*Metafield, error) {
 	metafieldService := &MetafieldServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return metafieldService.Create(metafield)
+	return metafieldService.Create(ctx, metafield)
 }
 
 // Update an existing metafield for an order
-func (s *OrderServiceOp) UpdateMetafield(orderID int64, metafield Metafield) (*Metafield, error) {
+func (s *OrderServiceOp) UpdateMetafield(ctx context.Context, orderID int64, metafield Metafield) (*Metafield, error) {
 	metafieldService := &MetafieldServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return metafieldService.Update(metafield)
+	return metafieldService.Update(ctx, metafield)
 }
 
 // Delete an existing metafield for an order
-func (s *OrderServiceOp) DeleteMetafield(orderID int64, metafieldID int64) error {
+func (s *OrderServiceOp) DeleteMetafield(ctx context.Context, orderID int64, metafieldID int64) error {
 	metafieldService := &MetafieldServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return metafieldService.Delete(metafieldID)
+	return metafieldService.Delete(ctx, metafieldID)
 }
 
 // List fulfillments for an order
-func (s *OrderServiceOp) ListFulfillments(orderID int64, options interface{}) ([]Fulfillment, error) {
+func (s *OrderServiceOp) ListFulfillments(ctx context.Context, orderID int64, options interface{}) ([]Fulfillment, error) {
 	fulfillmentService := &FulfillmentServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return fulfillmentService.List(options)
+	return fulfillmentService.List(ctx, options)
 }
 
 // Count fulfillments for an order
-func (s *OrderServiceOp) CountFulfillments(orderID int64, options interface{}) (int, error) {
+func (s *OrderServiceOp) CountFulfillments(ctx context.Context, orderID int64, options interface{}) (int, error) {
 	fulfillmentService := &FulfillmentServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return fulfillmentService.Count(options)
+	return fulfillmentService.Count(ctx, options)
 }
 
 // Get individual fulfillment for an order
-func (s *OrderServiceOp) GetFulfillment(orderID int64, fulfillmentID int64, options interface{}) (*Fulfillment, error) {
+func (s *OrderServiceOp) GetFulfillment(ctx context.Context, orderID int64, fulfillmentID int64, options interface{}) (*Fulfillment, error) {
 	fulfillmentService := &FulfillmentServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return fulfillmentService.Get(fulfillmentID, options)
+	return fulfillmentService.Get(ctx, fulfillmentID, options)
 }
 
 // Create a new fulfillment for an order
-func (s *OrderServiceOp) CreateFulfillment(orderID int64, fulfillment Fulfillment) (*Fulfillment, error) {
+func (s *OrderServiceOp) CreateFulfillment(ctx context.Context, orderID int64, fulfillment Fulfillment) (*Fulfillment, error) {
 	fulfillmentService := &FulfillmentServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return fulfillmentService.Create(fulfillment)
+	return fulfillmentService.Create(ctx, fulfillment)
 }
 
 // Update an existing fulfillment for an order
-func (s *OrderServiceOp) UpdateFulfillment(orderID int64, fulfillment Fulfillment) (*Fulfillment, error) {
+func (s *OrderServiceOp) UpdateFulfillment(ctx context.Context, orderID int64, fulfillment Fulfillment) (*Fulfillment, error) {
 	fulfillmentService := &FulfillmentServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return fulfillmentService.Update(fulfillment)
+	return fulfillmentService.Update(ctx, fulfillment)
 }
 
 // Complete an existing fulfillment for an order
-func (s *OrderServiceOp) CompleteFulfillment(orderID int64, fulfillmentID int64) (*Fulfillment, error) {
+func (s *OrderServiceOp) CompleteFulfillment(ctx context.Context, orderID int64, fulfillmentID int64) (*Fulfillment, error) {
 	fulfillmentService := &FulfillmentServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return fulfillmentService.Complete(fulfillmentID)
+	return fulfillmentService.Complete(ctx, fulfillmentID)
 }
 
 // Transition an existing fulfillment for an order
-func (s *OrderServiceOp) TransitionFulfillment(orderID int64, fulfillmentID int64) (*Fulfillment, error) {
+func (s *OrderServiceOp) TransitionFulfillment(ctx context.Context, orderID int64, fulfillmentID int64) (*Fulfillment, error) {
 	fulfillmentService := &FulfillmentServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return fulfillmentService.Transition(fulfillmentID)
+	return fulfillmentService.Transition(ctx, fulfillmentID)
 }
 
 // Cancel an existing fulfillment for an order
-func (s *OrderServiceOp) CancelFulfillment(orderID int64, fulfillmentID int64) (*Fulfillment, error) {
+func (s *OrderServiceOp) CancelFulfillment(ctx context.Context, orderID int64, fulfillmentID int64) (*Fulfillment, error) {
 	fulfillmentService := &FulfillmentServiceOp{client: s.client, resource: ordersResourceName, resourceID: orderID}
-	return fulfillmentService.Cancel(fulfillmentID)
+	return fulfillmentService.Cancel(ctx, fulfillmentID)
 }

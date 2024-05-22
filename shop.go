@@ -1,6 +1,7 @@
 package goshopify
 
 import (
+	"context"
 	"time"
 )
 
@@ -8,7 +9,7 @@ import (
 // Shopify API.
 // See: https://help.shopify.com/api/reference/shop
 type ShopService interface {
-	Get(options interface{}) (*Shop, error)
+	Get(ctx context.Context, options interface{}) (*Shop, error)
 }
 
 // ShopServiceOp handles communication with the shop related methods of the
@@ -76,8 +77,8 @@ type ShopResource struct {
 }
 
 // Get shop
-func (s *ShopServiceOp) Get(options interface{}) (*Shop, error) {
+func (s *ShopServiceOp) Get(ctx context.Context, options interface{}) (*Shop, error) {
 	resource := new(ShopResource)
-	err := s.client.Get("shop.json", resource, options)
+	err := s.client.Get(ctx, "shop.json", resource, options)
 	return resource.Shop, err
 }

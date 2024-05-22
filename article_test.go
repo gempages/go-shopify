@@ -1,9 +1,11 @@
 package goshopify
 
 import (
+	"context"
 	"fmt"
-	"github.com/jarcoal/httpmock"
 	"testing"
+
+	"github.com/jarcoal/httpmock"
 )
 
 func articleTests(t *testing.T, article Article) {
@@ -21,7 +23,7 @@ func TestArticleCount(t *testing.T) {
 	httpmock.RegisterResponder("GET", fmt.Sprintf("https://fooshop.myshopify.com/%s/blogs/%v/articles/count.json", client.pathPrefix, 77673496714),
 		httpmock.NewStringResponder(200, `{"count": 3}`))
 
-	cnt, err := client.Article.GetCountByBlogID(77673496714, nil)
+	cnt, err := client.Article.GetCountByBlogID(context.Background(), 77673496714, nil)
 	if err != nil {
 		t.Errorf("Article.Count returned error: %v", err)
 	}
@@ -58,7 +60,7 @@ func TestArticleCreate(t *testing.T) {
 		},
 	}
 
-	returned, err := client.Article.Create(77604257930, &article)
+	returned, err := client.Article.Create(context.Background(), 77604257930, &article)
 	if err != nil {
 		t.Errorf("Article.Create returned error: %v", err)
 	}
@@ -78,7 +80,7 @@ func TestArticleUpdate(t *testing.T) {
 		BodyHtml: "Alo alo",
 	}
 
-	returned, err := client.Article.Update(77604257930, 555885330570, &article)
+	returned, err := client.Article.Update(context.Background(), 77604257930, 555885330570, &article)
 	if err != nil {
 		t.Errorf("Article.Update returned error: %v", err)
 	}
@@ -93,7 +95,7 @@ func TestArticleDelete(t *testing.T) {
 	httpmock.RegisterResponder("DELETE", fmt.Sprintf("https://fooshop.myshopify.com/%s/blogs/%v/articles/%v.json", client.pathPrefix, 77604257930, 555885330570),
 		httpmock.NewStringResponder(200, "{}"))
 
-	err := client.Article.Delete(77604257930, 555885330570)
+	err := client.Article.Delete(context.Background(), 77604257930, 555885330570)
 	if err != nil {
 		t.Errorf("Article.Delete returned error: %v", err)
 	}
