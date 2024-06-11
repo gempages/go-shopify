@@ -10,8 +10,8 @@ import (
 // of the Shopify API.
 // See: https://shopify.dev/api/admin-rest/2021-10/resources/article#top
 type ArticleService interface {
-	GetByBlogID(ctx context.Context, blogID int64, limit int, sinceId int64, options interface{}) (*[]Article, error)
-	GetByBlogIDAndArticleID(context.Context, int64, int64, interface{}) (*Article, error)
+	GetByBlogID(ctx context.Context, blogID int64, limit int, sinceId int64, options *ArticleQueryOptions) (*[]Article, error)
+	GetByBlogIDAndArticleID(context.Context, int64, int64, *ArticleQueryOptions) (*Article, error)
 	GetCountByBlogID(context.Context, int64, interface{}) (int, error)
 	Create(context.Context, int64, *Article) (*Article, error)
 	Update(context.Context, int64, int64, *Article) (*Article, error)
@@ -61,8 +61,15 @@ type ArticleResource struct {
 	Article *Article `json:"article"`
 }
 
+type ArticleQueryOptions struct {
+	PublishedStatus string `url:"published_status,omitempty"` // default any
+	Handle          string `url:"handle,omitempty"`
+	Fields          string `url:"fields,omitempty"` // Show only certain fields, specified by a comma-separated list of field names.
+	Author          string `url:"author,omitempty"` // Filter articles by article author.
+}
+
 // GetByBlogID - Retrieves a list of all articles from a blog
-func (s *ArticleServiceOp) GetByBlogID(ctx context.Context, blogID int64, limit int, sinceId int64, options interface{}) (*[]Article, error) {
+func (s *ArticleServiceOp) GetByBlogID(ctx context.Context, blogID int64, limit int, sinceId int64, options *ArticleQueryOptions) (*[]Article, error) {
 	path := fmt.Sprintf("blogs/%v/articles.json?limit=%v&since_id=%v", blogID, limit, sinceId)
 	resource := new(ArticlesResource)
 	err := s.client.Get(ctx, path, resource, options)
@@ -70,7 +77,7 @@ func (s *ArticleServiceOp) GetByBlogID(ctx context.Context, blogID int64, limit 
 }
 
 // GetByBlogIDAndArticleID Receive a single Article
-func (s *ArticleServiceOp) GetByBlogIDAndArticleID(ctx context.Context, blogID int64, articleID int64, options interface{}) (resource *Article, err error) {
+func (s *ArticleServiceOp) GetByBlogIDAndArticleID(ctx context.Context, blogID int64, articleID int64, options *ArticleQueryOptions) (resource *Article, err error) {
 	path := fmt.Sprintf("blogs/%v/articles/%v.json", blogID, articleID)
 	err = s.client.Get(ctx, path, resource, options)
 	return resource, err
