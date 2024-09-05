@@ -621,7 +621,7 @@ func (c *Client) CreateAndDo(ctx context.Context, method, relPath string, data, 
 	_, err := c.createAndDoGetHeaders(ctx, method, relPath, data, options, resource)
 	if err != nil {
 		if respErr, ok := err.(RateLimitError); ok {
-			return errors.NewServiceUnavailableError(respErr.Status, "Shopify responded: "+respErr.Message, nil)
+			return errors.NewServiceUnavailableError(respErr.Status, "Shopify responded: "+respErr.Message)
 		}
 		if respErr, ok := err.(ResponseDecodingError); ok {
 			return errors.NewErrorWithContext(ctx, respErr, map[string]any{
@@ -631,11 +631,11 @@ func (c *Client) CreateAndDo(ctx context.Context, method, relPath string, data, 
 		}
 		if respErr, ok := err.(ResponseError); ok {
 			if respErr.Status >= http.StatusInternalServerError && respErr.Status <= http.StatusGatewayTimeout {
-				return errors.NewServiceUnavailableError(respErr.Status, "Shopify responded: "+respErr.Message, nil)
+				return errors.NewServiceUnavailableError(respErr.Status, "Shopify responded: "+respErr.Message)
 			}
 			if respErr.Status == http.StatusUnauthorized {
 				// Should not return AuthenticationError from our lib here to avoid misunderstanding
-				return errors.NewValidationError(respErr.Status, "Shopify responded: "+respErr.Message, nil)
+				return errors.NewValidationError(respErr.Status, "Shopify responded: "+respErr.Message)
 			}
 		}
 		return err
